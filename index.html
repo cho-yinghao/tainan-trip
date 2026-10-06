@@ -32,9 +32,12 @@
     }
 
     .hero {
+      display: flex;
+      align-items: center;
+      min-height: 320px;
       padding: 28px 24px 26px;
       color: #fff;
-      background: linear-gradient(135deg, #b94e42, #db8664);
+      background: linear-gradient(90deg, rgba(0, 0, 0, .58) 0%, rgba(0, 0, 0, .18) 48%, rgba(0, 0, 0, .04) 100%), url("images/cover.webp") center / cover no-repeat;
       border-radius: 24px;
       box-shadow: 0 12px 28px rgba(125, 66, 44, .16);
     }
@@ -169,19 +172,86 @@
 
     @media (max-width: 420px) {
       .page { width: min(100% - 24px, 720px); padding-top: 16px; }
-      .hero { padding: 24px 20px; border-radius: 20px; }
+      .hero { min-height: 300px; padding: 24px 20px; border-radius: 20px; }
       .stop { grid-template-columns: 74px 1fr; gap: 10px; padding: 15px 13px; }
       .place { font-size: 1.04rem; }
       .note { font-size: .9rem; }
     }
+
+    .vote-section { position: relative; }
+
+    .vote-form {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .vote-form label {
+      color: var(--muted);
+      font-size: .88rem;
+    }
+
+    .vote-form input {
+      width: 100%;
+      padding: 12px 14px;
+      color: var(--ink);
+      background: rgba(255, 255, 255, .72);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      font: inherit;
+      font-size: .95rem;
+    }
+
+    .vote-form button {
+      width: 100%;
+      padding: 12px 16px;
+      color: #fff;
+      background: var(--accent);
+      border: 0;
+      border-radius: 10px;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+    }
+
+    .vote-form button:disabled { cursor: wait; opacity: .6; }
+
+    .vote-status {
+      min-height: 1.6em;
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: .88rem;
+    }
+
+    .vote-results {
+      display: grid;
+      gap: 8px;
+      margin: 18px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .vote-results li {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, .5);
+      border-radius: 10px;
+    }
+
+    .vote-results strong { color: var(--accent); }
+
   </style>
 </head>
 <body>
   <main class="page">
     <header class="hero">
-      <p class="eyebrow">給朋友的輕旅行筆記</p>
-      <h1>難忘的行程</h1>
-      <p class="intro">慢慢走、好好吃，把古城的午後和夜色都收進旅程裡。</p>
+      <div>
+        <p class="eyebrow">給朋友的輕旅行筆記</p>
+        <h1>難忘的行程</h1>
+        <p class="intro">慢慢走、好好吃，把古城的午後和夜色都收進旅程裡。</p>
+      </div>
     </header>
 
     <section class="day" aria-labelledby="day-one">
@@ -228,6 +298,19 @@
       </div>
     </section>
 
+    <section class="tip vote-section" aria-labelledby="dinner-vote-title">
+      <strong id="dinner-vote-title">晚餐投票</strong>
+      <form class="vote-form" id="vote-form">
+        <label for="nickname">暱稱</label>
+        <input id="nickname" name="nickname" maxlength="40" required autocomplete="nickname" placeholder="請輸入暱稱">
+        <label for="choice">晚餐選項</label>
+        <input id="choice" name="choice" maxlength="100" required placeholder="例如：牛肉湯">
+        <button type="submit">投一票</button>
+        <p class="vote-status" id="vote-status" role="status" aria-live="polite"></p>
+      </form>
+      <ul class="vote-results" id="vote-results" aria-label="晚餐票數"></ul>
+    </section>
+
     <aside class="tip"><strong>小提醒：</strong>以上店名與時間皆為示意，之後可依實際開店時間、交通和大家的步調彈性調整。</aside>
     <section class="tip" aria-labelledby="before-you-go">
       <strong id="before-you-go">行前提醒</strong><br>
@@ -239,5 +322,77 @@
     </section>
     <footer>兩天一夜，剛剛好。</footer>
   </main>
+  <script>
+    const SUPABASE_URL = "https://vwjpgpefquyvkvbfjbrf.supabase.co";
+    const SUPABASE_PUBLIC_KEY = "sb_publishable_uK-ZwcC3LVel3HCmKOoriw_9rriTnEA";
+    const VOTES_ENDPOINT = `${SUPABASE_URL}/rest/v1/dinner_votes`;
+    const requestHeaders = {
+      apikey: SUPABASE_PUBLIC_KEY,
+      Authorization: `Bearer ${SUPABASE_PUBLIC_KEY}`
+    };
+
+    const voteForm = document.querySelector("#vote-form");
+    const voteStatus = document.querySelector("#vote-status");
+    const voteResults = document.querySelector("#vote-results");
+
+    function showStatus(message) {
+      voteStatus.textContent = message;
+    }
+
+    function renderResults(votes) {
+      const counts = votes.reduce((summary, vote) => {
+        const choice = vote.choice.trim();
+        summary[choice] = (summary[choice] || 0) + 1;
+        return summary;
+      }, {});
+
+      voteResults.innerHTML = Object.entries(counts)
+        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "zh-Hant"))
+        .map(([choice, count]) => `<li><span>${escapeHtml(choice)}</span><strong>${count} 票</strong></li>`)
+        .join("") || "<li>目前還沒有票</li>";
+    }
+
+    function escapeHtml(value) {
+      return value.replace(/[&<>'"]/g, (character) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
+      }[character]));
+    }
+
+    async function loadVotes() {
+      const response = await fetch(`${VOTES_ENDPOINT}?select=choice`, { headers: requestHeaders });
+      if (!response.ok) throw new Error("讀取投票失敗");
+      renderResults(await response.json());
+    }
+
+    voteForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const formData = new FormData(voteForm);
+      const nickname = formData.get("nickname").trim();
+      const choice = formData.get("choice").trim();
+      if (!nickname || !choice) return;
+
+      const button = voteForm.querySelector("button");
+      button.disabled = true;
+      showStatus("送出中⋯");
+      try {
+        const response = await fetch(VOTES_ENDPOINT, {
+          method: "POST",
+          headers: { ...requestHeaders, "Content-Type": "application/json", Prefer: "return=minimal" },
+          body: JSON.stringify({ nickname, choice })
+        });
+        if (!response.ok) throw new Error("投票失敗");
+        voteForm.reset();
+        showStatus("投票成功！");
+        await loadVotes();
+      } catch (error) {
+        showStatus("目前無法投票，請稍後再試。");
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    loadVotes().catch(() => showStatus("目前無法讀取票數，請稍後再試。"));
+  </script>
 </body>
 </html>
+
