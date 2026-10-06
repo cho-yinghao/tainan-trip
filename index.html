@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>難忘的行程</title>
+  <style>
+    :root {
+      --ink: #293241;
+      --muted: #6b7280;
+      --cream: #fffaf2;
+      --paper: #ffffff;
+      --accent: #c85c4a;
+      --accent-soft: #f7e1d8;
+      --line: #eadfd2;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--cream);
+      font-family: "Segoe Print", "Bradley Hand", "標楷體", "DFKai-SB", -apple-system, BlinkMacSystemFont, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      line-height: 1.7;
+    }
+
+    .page {
+      width: min(100% - 32px, 720px);
+      margin: 0 auto;
+      padding: 28px 0 42px;
+    }
+
+    .hero {
+      padding: 28px 24px 26px;
+      color: #fff;
+      background: linear-gradient(135deg, #b94e42, #db8664);
+      border-radius: 24px;
+      box-shadow: 0 12px 28px rgba(125, 66, 44, .16);
+    }
+
+    .eyebrow {
+      margin: 0 0 4px;
+      font-size: .9rem;
+      letter-spacing: .12em;
+      opacity: .86;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 8vw, 3.25rem);
+      line-height: 1.2;
+      letter-spacing: .04em;
+    }
+
+    .intro {
+      margin: 14px 0 0;
+      font-size: 1rem;
+      opacity: .95;
+    }
+
+    .day {
+      margin-top: 28px;
+    }
+
+    .day-title {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin: 0 0 12px;
+      font-size: 1.5rem;
+    }
+
+    .day-title span {
+      color: var(--accent);
+      font-size: .95rem;
+      font-weight: 500;
+    }
+
+    .stops {
+      display: grid;
+      gap: 12px;
+    }
+
+    .day-two .stops {
+      position: relative;
+      gap: 16px;
+      padding-left: 20px;
+    }
+
+    .day-two .stops::before {
+      position: absolute;
+      top: 10px;
+      bottom: 10px;
+      left: 5px;
+      width: 2px;
+      background: var(--accent-soft);
+      content: "";
+    }
+
+    .day-two .stop {
+      position: relative;
+    }
+
+    .day-two .stop::before {
+      position: absolute;
+      top: 22px;
+      left: -21px;
+      width: 10px;
+      height: 10px;
+      background: var(--accent);
+      border: 3px solid var(--cream);
+      border-radius: 50%;
+      content: "";
+    }
+
+    .stop {
+      display: grid;
+      grid-template-columns: 84px 1fr;
+      gap: 14px;
+      padding: 17px 16px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+    }
+
+    .time {
+      color: var(--accent);
+      font-size: 1rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .place {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .note {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    .tip {
+      margin-top: 28px;
+      padding: 16px 18px;
+      background: var(--accent-soft);
+      border-radius: 16px;
+      font-size: .92rem;
+    }
+
+    .tip strong { color: var(--accent); }
+
+    footer {
+      padding-top: 24px;
+      color: var(--muted);
+      text-align: center;
+      font-size: .85rem;
+    }
+
+    @media (max-width: 420px) {
+      .page { width: min(100% - 24px, 720px); padding-top: 16px; }
+      .hero { padding: 24px 20px; border-radius: 20px; }
+      .stop { grid-template-columns: 74px 1fr; gap: 10px; padding: 15px 13px; }
+      .place { font-size: 1.04rem; }
+      .note { font-size: .9rem; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <p class="eyebrow">給朋友的輕旅行筆記</p>
+      <h1>難忘的行程</h1>
+      <p class="intro">慢慢走、好好吃，把古城的午後和夜色都收進旅程裡。</p>
+    </header>
+
+    <section class="day" aria-labelledby="day-one">
+      <h2 class="day-title" id="day-one">第一天 <span>古城散步・夜市小吃</span></h2>
+      <div class="stops">
+        <article class="stop">
+          <div class="time">09:30</div>
+          <div><h3 class="place">示意店家：阿明牛肉湯</h3><p class="note">先用一碗熱騰騰的牛肉湯開啟旅程，吃飽再出發逛老城。</p></div>
+        </article>
+        <article class="stop">
+          <div class="time">11:00</div>
+          <div><h3 class="place">赤崁樓</h3><p class="note">看看紅磚古蹟與庭院，順便感受台南慢悠悠的歷史氣息。</p></div>
+        </article>
+        <article class="stop">
+          <div class="time">14:30</div>
+          <div><h3 class="place">神農街</h3><p class="note">沿著老街散步逛小店，找一間喜歡的咖啡店休息一下。</p></div>
+        </article>
+        <article class="stop">
+          <div class="time">18:00</div>
+          <div><h3 class="place">示意店家：花園夜市</h3><p class="note">用各式台南小吃填滿晚上，邊吃邊逛，安排一段輕鬆的夜晚。</p></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="day day-two" aria-labelledby="day-two">
+      <h2 class="day-title" id="day-two">第二天 <span>海風景色・老屋午後</span></h2>
+      <div class="stops">
+        <article class="stop">
+          <div class="time">09:00</div>
+          <div><h3 class="place">示意店家：台南早午餐</h3><p class="note">睡飽後吃份早午餐，補充體力迎接第二天的行程。</p></div>
+        </article>
+        <article class="stop">
+          <div class="time">10:30</div>
+          <div><h3 class="place">安平古堡</h3><p class="note">走進台南的海港歷史，登高看看老城與安平的風景。</p></div>
+        </article>
+        <article class="stop">
+          <div class="time">13:30</div>
+          <div><h3 class="place">四草綠色隧道</h3><p class="note">搭船穿過水道與紅樹林，享受一段清爽又療癒的自然時光。</p></div>
+        </article>
+        <article class="stop">
+          <div class="time">16:00</div>
+          <div><h3 class="place">示意店家：國華街甜點</h3><p class="note">回到市區吃份甜點，買些伴手禮，帶著滿足的心情返程。</p></div>
+        </article>
+      </div>
+    </section>
+
+    <aside class="tip"><strong>小提醒：</strong>以上店名與時間皆為示意，之後可依實際開店時間、交通和大家的步調彈性調整。</aside>
+    <section class="tip" aria-labelledby="before-you-go">
+      <strong id="before-you-go">行前提醒</strong><br>
+      天氣：示意，出發前請確認台南天氣預報。<br>
+      要帶的東西：示意，防曬用品、雨具、水壺與行動電源。<br>
+      集合時間：示意，第一天 09:00 在車站大廳集合。
+    </section>
+    <footer>兩天一夜，剛剛好。</footer>
+  </main>
+</body>
+</html>
