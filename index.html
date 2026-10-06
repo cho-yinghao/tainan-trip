@@ -242,6 +242,24 @@
 
     .vote-results strong { color: var(--accent); }
 
+    .close-poll {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .close-poll summary {
+      color: var(--muted);
+      cursor: pointer;
+      font-size: .88rem;
+    }
+
+    .close-poll form { display: grid; gap: 10px; margin-top: 10px; }
+    .close-poll input { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; font: inherit; }
+    .close-poll button { padding: 10px 14px; color: #fff; background: var(--ink); border: 0; border-radius: 10px; cursor: pointer; font: inherit; }
+    .close-poll button:disabled { cursor: wait; opacity: .6; }
+    .poll-closed { margin: 12px 0 0; color: var(--accent); font-weight: 700; }
+
   </style>
 </head>
 <body>
@@ -311,6 +329,16 @@
       <ul class="vote-results" id="vote-results" aria-label="晚餐票數"></ul>
     </section>
 
+    <details class="tip close-poll">
+      <summary>結束投票（主揪用）</summary>
+      <form id="close-poll-form">
+        <label for="poll-secret">主揪密語</label>
+        <input id="poll-secret" name="secret" type="password" autocomplete="off" required placeholder="請輸入密語">
+        <button type="submit">結束投票</button>
+        <p class="vote-status" id="close-poll-status" role="status" aria-live="polite"></p>
+      </form>
+    </details>
+
     <aside class="tip"><strong>小提醒：</strong>以上店名與時間皆為示意，之後可依實際開店時間、交通和大家的步調彈性調整。</aside>
     <section class="tip" aria-labelledby="before-you-go">
       <strong id="before-you-go">行前提醒</strong><br>
@@ -326,6 +354,8 @@
     const SUPABASE_URL = "https://vwjpgpefquyvkvbfjbrf.supabase.co";
     const SUPABASE_PUBLIC_KEY = "sb_publishable_uK-ZwcC3LVel3HCmKOoriw_9rriTnEA";
     const VOTES_ENDPOINT = `${SUPABASE_URL}/rest/v1/dinner_votes`;
+    const STATUS_ENDPOINT = `${SUPABASE_URL}/rest/v1/poll_status`;
+    const CLOSE_POLL_ENDPOINT = `${SUPABASE_URL}/functions/v1/close-poll`;
     const requestHeaders = {
       apikey: SUPABASE_PUBLIC_KEY,
       Authorization: `Bearer ${SUPABASE_PUBLIC_KEY}`
@@ -334,6 +364,9 @@
     const voteForm = document.querySelector("#vote-form");
     const voteStatus = document.querySelector("#vote-status");
     const voteResults = document.querySelector("#vote-results");
+    const closePoll = document.querySelector(".close-poll");
+    const closePollForm = document.querySelector("#close-poll-form");
+    const closePollStatus = document.querySelector("#close-poll-status");
 
     function showStatus(message) {
       voteStatus.textContent = message;
@@ -364,6 +397,17 @@
       renderResults(await response.json());
     }
 
+    async function loadPollState() {
+      const response = await fetch(`${STATUS_ENDPOINT}?select=is_closed&id=eq.1`, { headers: requestHeaders });
+      if (!response.ok) throw new Error("讀取投票狀態失敗");
+      const [state] = await response.json();
+      if (state?.is_closed) {
+        voteForm.hidden = true;
+        closePoll.hidden = true;
+        voteStatus.textContent = "投票已結束";
+      }
+    }
+
     voteForm.addEventListener("submit", async (event) => {
       event.preventDefault();
       const formData = new FormData(voteForm);
@@ -391,7 +435,32 @@
       }
     });
 
-    loadVotes().catch(() => showStatus("目前無法讀取票數，請稍後再試。"));
+    closePollForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const button = closePollForm.querySelector("button");
+      const secret = new FormData(closePollForm).get("secret");
+      button.disabled = true;
+      closePollStatus.textContent = "確認中⋯";
+      try {
+        const response = await fetch(CLOSE_POLL_ENDPOINT, {
+          method: "POST",
+          headers: { ...requestHeaders, "Content-Type": "application/json" },
+          body: JSON.stringify({ secret })
+        });
+        if (!response.ok) throw new Error("密語錯誤");
+        closePollStatus.textContent = "投票已結束";
+        closePoll.hidden = true;
+        voteForm.hidden = true;
+        voteStatus.textContent = "投票已結束";
+        await loadVotes();
+      } catch (error) {
+        closePollStatus.textContent = "密語不正確，投票仍開放中。";
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    Promise.all([loadPollState(), loadVotes()]).catch(() => showStatus("目前無法讀取投票，請稍後再試。"));
   </script>
 </body>
 </html>
